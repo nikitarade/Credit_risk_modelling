@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Risk Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #444;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input, select {
+            margin-top: 5px;
+            padding: 10px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        .form-group select {
+            background: #fff;
+        }
+        input[type="submit"] {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 15px;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        input[type="submit"]:hover {
+            background: #0056b3;
+        }
+        .result {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .result h2 {
+            color: #28a745;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Credit Risk Prediction</h1>
+        <form action="{{ url_for('predict') }}" method="post">
+            <div class="form-group">
+                <label for="Tot_Missed_Pmnt">Total Missed Payments:</label>
+                <input type="number" id="Tot_Missed_Pmnt" name="Tot_Missed_Pmnt" step="any" required value="{{ request.form['Tot_Missed_Pmnt'] if request.form['Tot_Missed_Pmnt'] is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="CC_TL">Credit Card TL:</label>
+                <input type="number" id="CC_TL" name="CC_TL" step="any" required value="{{ request.form['CC_TL'] if request.form['CC_TL'] is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="PL_TL">Personal Loan TL:</label>
+                <input type="number" id="PL_TL" name="PL_TL" step="any" required value="{{ request.form['PL_TL'] if request.form['PL_TL'] is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="Unsecured_TL">Unsecured TL:</label>
+                <input type="number" id="Unsecured_TL" name="Unsecured_TL" step="any" required value="{{ request.form['Unsecured_TL'] if request.form['Unsecured_TL'] is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="Age_Oldest_TL">Age of Oldest TL:</label>
+                <input type="number" id="Age_Oldest_TL" name="Age_Oldest_TL" step="any" required value="{{ request.form['Age_Oldest_TL'] if request.form['Age_Oldest_TL'] is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="max_recent_level_of_deliq">Max Recent Level of Delinquency:</label>
+                <input type="number" id="max_recent_level_of_deliq" name="max_recent_level_of_deliq" step="any" required value="{{ request.form['max_recent_level_of_deliq'] if request.form['max_recent_level_of_deliq'] is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="num_deliq_6_12mts">Number of Delinquency in Last 6-12 Months:</label>
+                <input type="number" id="num_deliq_6_12mts" name="num_deliq_6_12mts" step="any" required value="{{ request.form['num_deliq_6_12mts'] if request.form['num_deliq_6_12mts'] is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="NETMONTHLYINCOME">Net Monthly Income:</label>
+                <input type="number" id="NETMONTHLYINCOME" name="NETMONTHLYINCOME" step="any" required value="{{ request.form['NETMONTHLYINCOME'] if request.form['NETMONTHLYINCOME'] is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="Time_With_Curr_Empr">Time with Current Employer:</label>
+                <input type="number" id="Time_With_Curr_Empr" name="Time_With_Curr_Empr" step="any" required value="{{ request.form['Time_With_Curr_Empr'] if request.form['Time_With_Curr_Empr'] is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="CC_enq_L12m">Credit Card Enquiries in Last 12 Months:</label>
+                <input type="number" id="CC_enq_L12m" name="CC_enq_L12m" step="any" required value="{{ request.form['CC_enq_L12m'] if request.form['CC_enq_L12m'] is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="MARITALSTATUS">Marital Status:</label>
+                <select id="MARITALSTATUS" name="MARITALSTATUS" required>
+                    <option value="MARRIED" {% if request.form['MARITALSTATUS'] == 'MARRIED' %}selected{% endif %}>Married</option>
+                    <option value="SINGLE" {% if request.form['MARITALSTATUS'] == 'SINGLE' %}selected{% endif %}>Single</option>
+                    <option value="DIVORCED" {% if request.form['MARITALSTATUS'] == 'DIVORCED' %}selected{% endif %}>Divorced</option>
+                    <option value="WIDOWED" {% if request.form['MARITALSTATUS'] == 'WIDOWED' %}selected{% endif %}>Widowed</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="EDUCATION">Education:</label>
+                <select id="EDUCATION" name="EDUCATION" required>
+                    <option value="SSC" {% if request.form['EDUCATION'] == 'SSC' %}selected{% endif %}>SSC</option>
+                    <option value="12TH" {% if request.form['EDUCATION'] == '12TH' %}selected{% endif %}>12TH</option>
+                    <option value="GRADUATE" {% if request.form['EDUCATION'] == 'GRADUATE' %}selected{% endif %}>Graduate</option>
+                    <option value="UNDER GRADUATE" {% if request.form['EDUCATION'] == 'UNDER GRADUATE' %}selected{% endif %}>Under Graduate</option>
+                    <option value="POST-GRADUATE" {% if request.form['EDUCATION'] == 'POST-GRADUATE' %}selected{% endif %}>Post-Graduate</option>
+                    <option value="OTHERS" {% if request.form['EDUCATION'] == 'OTHERS' %}selected{% endif %}>Others</option>
+                    <option value="PROFESSIONAL" {% if request.form['EDUCATION'] == 'PROFESSIONAL' %}selected{% endif %}>Professional</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="GENDER">Gender:</label>
+                <select id="GENDER" name="GENDER" required>
+                    <option value="MALE" {% if request.form['GENDER'] == 'MALE' %}selected{% endif %}>Male</option>
+                    <option value="FEMALE" {% if request.form['GENDER'] == 'FEMALE' %}selected{% endif %}>Female</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="last_prod_enq2">Last Product Enquiry 2:</label>
+                <input type="number" id="last_prod_enq2" name="last_prod_enq2" step="any" required value="{{ request.form['last_prod_enq2'] if request.form['last_prod_enq2'] is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="first_prod_enq2">First Product Enquiry 2:</label>
+                <input type="number" id="first_prod_enq2" name="first_prod_enq2" step="any" required value="{{ request.form['first_prod_enq2'] if request.form['first_prod_enq2'] is not none else '' }}">
+            </div>
+            <input type="submit" value="Predict">
+        </form>
+        {% if prediction_text %}
+            <div class="result">
+                <h2>{{ prediction_text }}</h2>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
